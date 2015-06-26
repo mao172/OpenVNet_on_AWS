@@ -33,7 +33,13 @@ Key-Valueストア(KVS)を構築することができるソフトウェアの一
 
 - [Redisの使い方](http://promamo.com/?p=3358) - 技術の犬小屋
 
-## AWS のVPC(EC2インスタンス)にENIを追加する
+## AWS環境を使う
+### ソース/宛先チェックの無効化
+
+EC2のインスタンスを選択し、[アクション]-[ネットワーキング]-[送信元/送信先の変更チェック]を選択する。
+
+
+### AWS のVPC(EC2インスタンス)にENIを追加する
 
 1. EC2の「ネットワークインタフェース」から「ネットワークインタフェースの作成」をする
   - 既に割りあたっているeth0 と同じサブネットを選択する
@@ -89,12 +95,29 @@ $ yum install -y openvnet
 Open vSwitchを使って仮想ブリッジを作成する
 
 ```
-$ cat > /etc/sysconfig/network-scripts/ifcfg-br0 <<EOF
+inetary=($(ifconfig eth1 | grep 'inet addr'))
+
+ipaddress=$(echo ${inetary[1]} | awk -F '[: ]' '{print $2}')
+netmask=$(echo ${inetary[3]} | awk -F '[: ]' '{print $2}')
+
+cat > /etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
+DEVICE=eth1
+DEVICETYPE=ovs
+TYPE=OVSPort
+OVS_BRIDGE=br0
+BOOTPROTO=none
+ONBOOT=yes
+HOTPLUG=no
+EOF
+
+cat > /etc/sysconfig/network-scripts/ifcfg-br0 <<EOF
 DEVICE=br0
 DEVICETYPE=ovs
 TYPE=OVSBridge
 ONBOOT=yes
 BOOTPROTO=static
+IPADDR=${ipaddress}
+NETMASK=${netmask}
 HOTPLUG=no
 OVS_EXTRA="
  set bridge     \${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
@@ -106,8 +129,10 @@ OVS_EXTRA="
 "
 EOF
 
-$ service openvswitch start
-$ ifup br0
+service openvswitch start
+ifup br0 eth1
+
+service network restart
 ```
 
 Redisの設定と起動

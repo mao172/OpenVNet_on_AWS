@@ -1,4 +1,4 @@
-# OpenVNetをさわってみるにあたり・・・
+# OpenVNet
 
 ## OpenVNetを取り巻く周辺
 
@@ -32,6 +32,36 @@ Linux OS上で単体で稼動させることも可能。
 Key-Valueストア(KVS)を構築することができるソフトウェアの一つ
 
 - [Redisの使い方](http://promamo.com/?p=3358) - 技術の犬小屋
+
+## AWS のVPC(EC2インスタンス)にENIを追加する
+
+1. EC2の「ネットワークインタフェース」から「ネットワークインタフェースの作成」をする
+  - 既に割りあたっているeth0 と同じサブネットを選択する
+  - セキュリティグループは作成済みの中から適切なものを選択
+2. 作成されたeniを選択し、「アタッチ」する
+3. アタッチ先のEC2インスタンスにSSHログイン
+  - eth1が追加されていることを確認
+```
+$ ifconfig -a
+```
+
+  - eth1の設定を追加し、upする  
+
+```
+$ cat > /etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
+DEVICE=eth1
+ONBOOT=yes
+BOOTPROTO=dhcp
+TYPE=Ethernet
+DEFROUTE=no
+EOF
+
+ifup eth1
+```
+
+<<参考>>
+- [EC2に複数のENIをアタッチする手順と制約（Public-ip,DNSが割当てられなくなる）](http://qiita.com/kaojiri/items/94bc62c7b003367b5e46) - Qiita
+- [AWS EC2 で Ping応答を得られるようにする設定](http://www.checksite.jp/aws-ec2-icmp-rule/)
 
 ## OpenVNetの構成要素
 - vna
@@ -86,4 +116,3 @@ Redisの設定と起動
 $ sed -i -E 's/bind [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/bind 0.0.0.0/g' /etc/redis.conf
 $ service redis start
 ```
-

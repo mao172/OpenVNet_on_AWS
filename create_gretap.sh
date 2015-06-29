@@ -5,7 +5,7 @@
 name=${1}
 remote_addr=${2}
 local_addr=${3}
-virtual_addr=${5}
+virtual_addr=${4}
 
 ip link add ${name} type gretap remote ${remote_addr} local ${local_addr}
 ip addr add ${virtual_addr} dev ${name}

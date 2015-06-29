@@ -9,3 +9,5 @@ DEFROUTE=no
 EOF
 
 ifup eth1
+
+ifconfig eth1

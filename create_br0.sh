@@ -5,6 +5,9 @@ inetary=($(ifconfig eth1 | grep 'inet addr'))
 ipaddress=$(echo ${inetary[1]} | awk -F '[: ]' '{print $2}')
 netmask=$(echo ${inetary[3]} | awk -F '[: ]' '{print $2}')
 
+infoary=($(ifconfig eth1 | grep 'HWaddr'))
+macaddress=${infoary[4]}
+
 cat > /etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
 DEVICE=eth1
 DEVICETYPE=ovs
@@ -27,8 +30,8 @@ HOTPLUG=no
 OVS_EXTRA="
  set bridge     \${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
  set bridge     \${DEVICE} other_config:disable-in-band=true --
- set bridge     \${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
- set bridge     \${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
+ set bridge     \${DEVICE} other-config:datapath-id=0000$(echo ${macaddress} | tr -d ':') --
+ set bridge     \${DEVICE} other-config:hwaddr=${macaddress} --
  set-fail-mode  \${DEVICE} standalone --
  set-controller \${DEVICE} tcp:127.0.0.1:6633
 "
@@ -38,3 +41,8 @@ service openvswitch start
 ifup br0 eth1
 
 service network restart
+
+ifconfig eth1
+ifconfig br0
+
+ovs-vsctl show

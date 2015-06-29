@@ -33,6 +33,15 @@ Key-Valueストア(KVS)を構築することができるソフトウェアの一
 
 - [Redisの使い方](http://promamo.com/?p=3358) - 技術の犬小屋
 
+
+### GRE (Generic Routing Encapsulation)
+
+- [GRE ( Generic Routing Encapsulation ) とは](http://www.infraexpert.com/study/rp8gre.htm)
+- [VPN（GREトンネルとルーティングプロトコル 1） CCNP実機で学ぶ](http://atnetwork.info/ccnp4/vpn17.html)
+- [[NT]VPN トンネル - GRE プロトコル 47 パケットの説明と使い方](https://support.microsoft.com/ja-jp/kb/241251/ja)
+- [OpenvSwitchにGREトンネルを設定](http://alexei-karamazov.hatenablog.com/entry/2013/11/16/180213) - 猫型エンジニアのブログ
+
+
 ## AWS環境を使う
 ### ソース/宛先チェックの無効化
 
@@ -44,6 +53,8 @@ EC2のインスタンスを選択し、[アクション]-[ネットワーキン�
 1. EC2の「ネットワークインタフェース」から「ネットワークインタフェースの作成」をする
   - 既に割りあたっているeth0 と同じサブネットを選択する
   - セキュリティグループは作成済みの中から適切なものを選択
+2. 作成したeniの設定
+  - [アクション]-[ネットワーキング]-[送信元/送信先の変更チェック]を選択し、送信元/送信先チェックを無効にする
 2. 作成されたeniを選択し、「アタッチ」する
 3. アタッチ先のEC2インスタンスにSSHログイン
   - eth1が追加されていることを確認
@@ -69,11 +80,22 @@ ifup eth1
 - [EC2に複数のENIをアタッチする手順と制約（Public-ip,DNSが割当てられなくなる）](http://qiita.com/kaojiri/items/94bc62c7b003367b5e46) - Qiita
 - [AWS EC2 で Ping応答を得られるようにする設定](http://www.checksite.jp/aws-ec2-icmp-rule/)
 
+### セキュリティグループの設定
+
+- PINGで疎通確認を行うため、ICMPを許可しておく。
+- GRE プロトコルの47を許可しておく。
+
+#### インバウンド
+
+- カスタムプロトコル: 47 : すべて
+- SSH : TCP : 22
+- すべてのICMP : すべて : 該当なし
+
+
 ## OpenVNetの構成要素
 - vna
 - vnmgr
 - webapi
-- vnctl ???
 
 ## OpenVNet のセットアップ
 

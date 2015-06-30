@@ -114,7 +114,7 @@ $ yum install -y epel-release
 $ yum install -y openvnet
 ```
 
-Open vSwitchを使って仮想ブリッジを作成する
+#### Open vSwitchを使って仮想ブリッジを作成する
 
 ```
 inetary=($(ifconfig eth1 | grep 'inet addr'))
@@ -160,7 +160,10 @@ ifup br0 eth1
 service network restart
 ```
 
-Redisの設定と起動
+#### OVSを使ったネットワーク構成
+![OVSを使ったネットワーク構成](https://gist.github.com/mao172/b6660f9cb1b73a0b600d/raw/1e259edce0a39ffcaaf57caf29afcec826600c54/network_01.png)
+
+#### Redisの設定と起動
 
 ```
 $ sed -i -E 's/bind [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/bind 0.0.0.0/g' /etc/redis.conf

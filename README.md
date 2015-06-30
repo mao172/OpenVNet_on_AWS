@@ -118,13 +118,13 @@ $ yum install -y openvnet
 
 ```
 inetary=($(ifconfig eth1 | grep 'inet addr'))
- 
+
 ipaddress=$(echo ${inetary[1]} | awk -F '[: ]' '{print $2}')
 netmask=$(echo ${inetary[3]} | awk -F '[: ]' '{print $2}')
- 
+
 infoary=($(ifconfig eth1 | grep 'HWaddr'))
 macaddress=${infoary[4]}
- 
+
 cat > /etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
 DEVICE=eth1
 DEVICETYPE=ovs
@@ -134,7 +134,7 @@ BOOTPROTO=none
 ONBOOT=yes
 HOTPLUG=no
 EOF
- 
+
 cat > /etc/sysconfig/network-scripts/ifcfg-br0 <<EOF
 DEVICE=br0
 DEVICETYPE=ovs
@@ -162,6 +162,30 @@ service network restart
 
 #### OVSを使ったネットワーク構成
 ![OVSを使ったネットワーク構成](http://bl.ocks.org/mao172/raw/b6660f9cb1b73a0b600d/network_01.png)
+
+sv1,sv2側のGRETapを作成するシェルスクリプト
+```
+#! /bin/sh
+# Usage:
+#  create_gretap NAME REMOTE_ADDR LOCAL_ADDR KEY VIRTUAL_ADDR
+ 
+name=${1}
+remote_addr=${2}
+local_addr=${3}
+virtual_addr=${4}
+ 
+ip link add ${name} type gretap remote ${remote_addr} local ${local_addr}
+ip addr add ${virtual_addr} dev ${name}
+ip link set ${name} up
+ip link set ${name} mtu 1450
+ 
+ifconfig ${name}
+```
+
+OVS側のGREポートを作成
+```
+$ ovs-vsctl add-port br0 ${name} -- set interface ${name} type=gre options:local=${local_addr} options:remote_ip=${remote_addr} options:pmtud=true
+```
 
 #### Redisの設定と起動
 

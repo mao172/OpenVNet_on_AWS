@@ -105,7 +105,7 @@ ifup eth1
 
 ### セットアップ手順
 
-[インストールガイド](http://openvnet.org/installation/)に従い、以下の順位コマンドを実行していく
+[インストールガイド](http://openvnet.org/installation/)に従い、以下の順にコマンドを実行していく
 
 ```Shell:create_br0.sh
 $ curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo
@@ -161,30 +161,38 @@ service network restart
 ```
 
 #### OVSを使ったネットワーク構成
+下図のように構成する。
 ![OVSを使ったネットワーク構成](http://bl.ocks.org/mao172/raw/b6660f9cb1b73a0b600d/network_01.png)
 
 sv1,sv2側のGRETapを作成するシェルスクリプト
 ```
 #! /bin/sh
 # Usage:
-#  create_gretap NAME REMOTE_ADDR LOCAL_ADDR KEY VIRTUAL_ADDR
- 
+#  create_gretap NAME REMOTE_ADDR LOCAL_ADDR VIRTUAL_ADDR
+
 name=${1}
 remote_addr=${2}
 local_addr=${3}
 virtual_addr=${4}
- 
+
 ip link add ${name} type gretap remote ${remote_addr} local ${local_addr}
 ip addr add ${virtual_addr} dev ${name}
 ip link set ${name} up
 ip link set ${name} mtu 1450
- 
+
 ifconfig ${name}
 ```
 
-OVS側のGREポートを作成
+sv1,sv2にログインして実行する。
+
+sv0にログインし、OVS側のGREポートを`ovs-vsctl`コマンドを使用して作成する
 ```
-$ ovs-vsctl add-port br0 ${name} -- set interface ${name} type=gre options:local=${local_addr} options:remote_ip=${remote_addr} options:pmtud=true
+$ ovs-vsctl add-port br0 ${name} -- \
+    set interface ${name} \
+    type=gre \
+    options:local=${local_addr} \
+    options:remote_ip=${remote_addr} \
+    options:pmtud=true
 ```
 
 #### Redisの設定と起動
@@ -192,4 +200,82 @@ $ ovs-vsctl add-port br0 ${name} -- set interface ${name} type=gre options:local
 ```
 $ sed -i -E 's/bind [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/bind 0.0.0.0/g' /etc/redis.conf
 $ service redis start
+```
+
+#### Databaseのセットアップ
+
+```
+# Launch mysql server.
+service mysqld start
+
+# To automatically launch the mysql server at boot, execute the following command.
+chkconfig mysqld on
+
+# Set PATH environment variable as following since the OpenVNet uses its own ruby binary.
+PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+
+# Create database
+cd /opt/axsh/openvnet/vnet
+bundle exec rake db:create
+bundle exec rake db:init
+```
+
+#### OpenVNetの設定
+
+```
+# Start vnmgr and webapi.
+initctl start vnet-vnmgr
+initctl start vnet-webapi
+
+# Datapath
+
+datapath_id=$(echo $(cat /etc/sysconfig/network-scripts/ifcfg-br0 | grep datapath-id= | awk -F '[:=-]' '{print $5}'))
+
+name=${1}
+node_id=${2}
+network_addr=${3}
+
+if [ "${name}" == "" ]; then
+  name="test1"
+fi
+
+if [ "${node_id}" == "" ]; then
+  node_id="vna"
+fi
+
+if [ "${network_addr}" == "" ]; then
+  network_addr="10.0.0.0"
+fi
+
+vnctl datapaths add --uuid dp-${name} --display-name ${name} --dpid ${datapath_id} --node-id ${node_id}
+
+
+# Network
+
+vnctl networks add --uuid nw-${name} --display-name ${name}-net --ipv4-network ${network_addr} --ipv4-prefix 24 --network-mode virtual
+
+
+# Interface
+#
+
+vnctl interfaces add --uuid if-inst1 \
+    --mode vif --owner-datapath-uuid dp-${name} \
+    --mac-address EE:99:D5:67:FD:52 \
+    --network-uuid nw-${name} \
+    --ipv4-address 10.0.0.1 \
+    --port-name tap1
+vnctl interfaces add --uuid if-inst2 \
+    --mode vif --owner-datapath-uuid dp-${name} \
+    --mac-address 2A:27:6E:63:5E:E5 \
+    --network-uuid nw-${name} \
+    --ipv4-address 10.0.0.2 \
+    --port-name tap2
+
+```
+
+#### サービスの起動
+```
+initctl start vnet-vnmgr
+initctl start vnet-webapi
+initctl start vnet-vna
 ```

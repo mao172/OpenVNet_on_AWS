@@ -161,7 +161,7 @@ service network restart
 ```
 
 #### OVSを使ったネットワーク構成
-![OVSを使ったネットワーク構成](#file-network_01-png)
+![OVSを使ったネットワーク構成](http://bl.ocks.org/mao172/raw/b6660f9cb1b73a0b600d/network_01.png)
 
 #### Redisの設定と起動
 

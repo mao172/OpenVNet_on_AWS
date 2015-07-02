@@ -91,6 +91,8 @@ ifup eth1
 - SSH : TCP : 22
 - すべてのICMP : すべて : 該当なし
 
+### 参考
+- [openvswitchでVXLAN環境(unicast)を構築する](http://d.hatena.ne.jp/KNOPP/20140901/1409526876)
 
 ## OpenVNetの構成要素
 - vna
@@ -279,3 +281,10 @@ initctl start vnet-vnmgr
 initctl start vnet-webapi
 initctl start vnet-vna
 ```
+
+
+* これだとeth1にきたGREのパケットがdropされてしまい、疎通が取れなくなる。
+  - => br0 にIPを振らない、eth1をつながない
+  - => eth1をGRE専用にする（いったん）
+
+* P2Vどうしよう・・・

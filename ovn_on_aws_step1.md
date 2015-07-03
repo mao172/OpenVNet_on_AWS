@@ -12,7 +12,7 @@
     - カスタムプロトコル: 47 : すべて
     - SSH : TCP : 22
     - すべてのICMP : すべて : 該当なし
-    ![セキュリティグループの設定](http://bl.ocks.org/mao172/raw/b6660f9cb1b73a0b600d/securuty_group_01.png)
+    ![セキュリティグループの設定](http://bl.ocks.org/mao172/raw/b6660f9cb1b73a0b600d/security_group_01.png)
 1. OpenVNetを稼動させるsv0と、接続ノードになるsv1、sv2を作成する。
   - OpenVNetの動作環境がCentOSなので、「AWS Marketplace」から'CentOS 6 (x86_64) - with Updates'を選択してイメージを作成する。
   - インスタンスの詳細の設定でsv0、sv1、sv2が同じサブネットになるように設定する。

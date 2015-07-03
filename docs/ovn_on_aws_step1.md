@@ -129,7 +129,8 @@ gre1      Link encap:Ethernet  HWaddr 92:00:8D:9F:72:6B
           RX packets:64 errors:0 dropped:0 overruns:0 frame:0
           TX packets:64 errors:0 dropped:0 overruns:0 carrier:0
           collisions:0 txqueuelen:1000
-          RX bytes:5984 (5.8 KiB)  TX bytes:6240 (6.0 KiB)```
+          RX bytes:5984 (5.8 KiB)  TX bytes:6240 (6.0 KiB)
+```
 
   sv2
 ````
@@ -152,3 +153,12 @@ gre1 10.1.0.1 92:00:8D:9F:72:6B
 gre2 10.1.0.2 1E:4B:E0:00:B7:85
 _EOF_
 ```
+
+### vnaの起動
+
+```
+initctl start vnet-vna
+```
+
+### 疎通の確認
+  sv1,sv2それぞれから、相手の仮想IPに対してpingを打ち、確認する。

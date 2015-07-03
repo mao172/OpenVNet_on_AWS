@@ -1,6 +1,6 @@
 #! /bin/sh
 # Usage:
-#  create_gretap NAME REMOTE_ADDR LOCAL_ADDR KEY VIRTUAL_ADDR
+#  create_gretap NAME REMOTE_ADDR LOCAL_ADDR KEY VIRTUAL_ADDR/MASK
 
 name=${1}
 remote_addr=${2}
@@ -13,3 +13,5 @@ ip link set ${name} up
 ip link set ${name} mtu 1450
 
 ifconfig ${name}
+
+route -n

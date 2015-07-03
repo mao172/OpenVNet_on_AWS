@@ -79,6 +79,8 @@ ifup eth1
 <<参考>>
 - [EC2に複数のENIをアタッチする手順と制約（Public-ip,DNSが割当てられなくなる）](http://qiita.com/kaojiri/items/94bc62c7b003367b5e46) - Qiita
 - [AWS EC2 で Ping応答を得られるようにする設定](http://www.checksite.jp/aws-ec2-icmp-rule/)
+- [VPC で Elastic Network Interface を使用する](http://docs.aws.amazon.com/ja_jp/AmazonVPC/latest/UserGuide/VPC_ElasticNetworkInterfaces.html)  - Amazon.com
+
 
 ### セキュリティグループの設定
 

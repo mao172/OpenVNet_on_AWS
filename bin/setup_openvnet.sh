@@ -6,6 +6,8 @@ PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
 initctl start vnet-vnmgr
 initctl start vnet-webapi
 
+sleep 10
+
 datapath_id=$(echo $(cat /etc/sysconfig/network-scripts/ifcfg-br0 | grep datapath-id= | awk -F '[:=-]' '{print $5}'))
 
 name=${1}

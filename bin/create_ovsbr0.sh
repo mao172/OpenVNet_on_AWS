@@ -5,7 +5,7 @@ inetary=($(ifconfig eth2 | grep 'inet addr'))
 ipaddress=$(echo ${inetary[1]} | awk -F '[: ]' '{print $2}')
 netmask=$(echo ${inetary[3]} | awk -F '[: ]' '{print $2}')
 
-infoary=($(ifconfig eth1 | grep 'HWaddr'))
+infoary=($(ifconfig eth2 | grep 'HWaddr'))
 macaddress=${infoary[4]}
 
 cat > /etc/sysconfig/network-scripts/ifcfg-eth2 <<EOF

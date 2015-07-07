@@ -27,6 +27,16 @@
   - 「送信元/送信先の変更チェック」を無効にする。
     - 作成したネットワークインタフェースを選択し、[アクション]-[送信元/送信先の変更チェック]を選択する。
 
+4. iptablesのサービスを停止する。
+5. 念のため、SELinuxをdisabledにしておく。
+
+## 使用するスクリプトの取得と準備
+  各EC2インスタンスにログインし、githubから取得する
+```
+$ yum install -y git
+$ git clone https://github.com/mao172/OpenVNet_on_AWS.git ./setup
+$ cd ./setup
+```
 
 ## eth1の設定
   各EC2インスタンスにログインし、`create_eth1.sh`を実行する

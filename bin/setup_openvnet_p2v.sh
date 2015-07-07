@@ -37,7 +37,7 @@ host_mac=${infoary[4]}
 
 
 # Datapath
-vnctl datapaths add --uuid dp-${name} --display-name ${name} --dpid ${datapath_id} --node-id ${node_id}
+vnctl datapaths add --uuid dp-${name} --display-name ${name} --dpid 0x${datapath_id} --node-id ${node_id}
 
 # Network
 vnctl networks add --uuid nw-${name}phys \
@@ -99,7 +99,7 @@ vnctl interfaces add \
       --owner-datapath-uuid="dp-${name}" \
       --network-uuid="nw-${name}phys" \
       --mac-address="10:00:00:00:02:01" \
-      --ipv4-address="172.31.48.1" \
+      --ipv4-address="${host_addr}" \
       --mode="simulated" \
       --enable-routing="true"
 
@@ -136,7 +136,8 @@ vnctl routes add \
       --interface-uuid="if-rt${name}phys" \
       --route-link-uuid="rl-pubint" \
       --network-uuid="nw-${name}phys" \
-      --ipv4-network="172.31.48.0"
+      --ipv4-network="172.31.48.0" \
+      --ipv4-prefix="20"
 
 vnctl routes add \
       --interface-uuid="if-rt${name}vrt" \

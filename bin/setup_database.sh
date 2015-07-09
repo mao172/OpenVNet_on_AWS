@@ -11,5 +11,6 @@ PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
 
 # Create database
 cd /opt/axsh/openvnet/vnet
+bundle exec rake db:drop
 bundle exec rake db:create
 bundle exec rake db:init

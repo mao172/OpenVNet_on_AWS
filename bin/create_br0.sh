@@ -1,19 +1,19 @@
 #! /bin/sh
 
-inetary=($(ifconfig eth1 | grep 'inet addr'))
+brname=br0
 
-ipaddress=$(echo ${inetary[1]} | awk -F '[: ]' '{print $2}')
-netmask=$(echo ${inetary[3]} | awk -F '[: ]' '{print $2}')
+macaddress=${1}
+ipaddress=${2}
+netmask=${3}
 
-infoary=($(ifconfig eth1 | grep 'HWaddr'))
-macaddress=${infoary[4]}
 
-cat > /etc/sysconfig/network-scripts/ifcfg-br0 <<EOF
-DEVICE=br0
+cat > /etc/sysconfig/network-scripts/ifcfg-${brname} <<EOF
+DEVICE=${brname}
 DEVICETYPE=ovs
 TYPE=OVSBridge
 ONBOOT=yes
 BOOTPROTO=static
+IPADDR=${ipaddress}
 HOTPLUG=no
 OVS_EXTRA="
  set bridge     \${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
@@ -26,10 +26,8 @@ OVS_EXTRA="
 EOF
 
 service openvswitch start
-ifup br0
+ifdown ${brname}
+ifup ${brname}
 
-service network restart
-
-ifconfig br0
-
+ifconfig ${brname}
 ovs-vsctl show

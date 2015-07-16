@@ -14,7 +14,7 @@
     - すべてのICMP : すべて : 該当なし
     ![セキュリティグループの設定](./images/security_group_01.png)
 1. OpenVNetを稼動させるsv0と、接続ノードになるsv1、sv2を作成する。
-  - OpenVNetの動作環境がCentOS6なので、「AWS Marketplace」から'CentOS 6 (x86_64) - with Updates'を選択してイメージを作成する。
+  - OpenVNetの動作環境がCentOS6なので、「AWS Marketplace」から'CentOS 6 (x86_64) - with Updates HVM'を選択してイメージを作成する。
   - インスタンスの詳細の設定でsv0、sv1、sv2が同じサブネットになるように設定する。
   - セキュリティグループの設定でsv0、sv1、sv2に先に作成したセキュリティグループを割り当てる。
   - NICを最初から2つに設定して作成すると、パブリックIPが割り当てられなくなるためNIC1つ(eth0のみ)で構成し、後から追加する。

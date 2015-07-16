@@ -24,6 +24,16 @@ nw_virtual_uuid=nw-virtual
 nw_virtual_addr=10.1.11.0
 nw_virtual_prefix=24
 
+if_patch0_uuid=if-patch00
+if_patch0_mac=02:01:00:00:00:01
+if_patch0_addr=10.100.0.1
+if_patch0_port=patch00
+
+if_patch1_uuid=if-patch10
+if_patch1_mac=02:01:00:00:00:02
+if_patch1_addr=10.100.0.2
+if_patch1_port=patch10
+
 # datapath
 vnctl datapaths add --uuid ${dp0_name} --display-name ${dp0_name} --dpid ${dp0_datapath_id} --node-id ${dp0_node_id}
 vnctl datapaths add --uuid ${dp1_name} --display-name ${dp1_name} --dpid ${dp1_datapath_id} --node-id ${dp1_node_id}
@@ -34,41 +44,61 @@ vnctl networks add --uuid ${nw_physical_uuid} --display-name ${nw_physical_uuid}
 vnctl networks add --uuid ${nw_virtual_uuid} --display-name ${nw_virtual_uuid} --ipv4-network ${nw_virtual_addr} --ipv4-prefix ${nw_virtual_prefix} --network-mode virtual
 
 # interface
-vnctl interfaces add --uuid if-patch10 --owner-datapath-uuid dp-0 --network-uuid nw-public --mac-address 02:01:00:00:00:01 --ipv4-address 10.100.0.2 --port-name patch10 --mode patch
-vnctl interfaces add --uuid if-patch00 --owner-datapath-uuid dp-1 --network-uuid nw-public --mac-address 02:01:00:00:00:02 --ipv4-address 10.100.0.3 --port-name patch00 --mode patch
+vnctl interfaces add --uuid ${if_patch0_uuid} \
+  --owner-datapath-uuid ${dp0_name} \
+  --network-uuid ${nw_physical_uuid} \
+  --mac-address ${if_patch0_mac} \
+  --ipv4-address ${if_patch0_addr} \
+  --port-name ${if_patch0_port} \
+  --mode patch
 
-#vnctl interfaces add --uuid if-edge0 --owner-datapath-uuid dp-0 --mac-address 7a:b4:f4:08:41:41 --ipv4-address 10.100.0.12 --port-name ptedge #--mode edge
-#vnctl interfaces add --uuid if-edge1 --owner-datapath-uuid dp-1 --mac-address a6:31:58:ed:44:47 --ipv4-address 10.100.0.13 --port-name ptedge1 #--mode edge
+  vnctl interfaces add --uuid ${if_patch1_uuid} \
+    --owner-datapath-uuid ${dp1_name} \
+    --network-uuid ${nw_physical_uuid} \
+    --mac-address ${if_patch1_mac} \
+    --ipv4-address ${if_patch1_addr} \
+    --port-name ${if_patch1_port} \
+    --mode patch
 
 
-vnctl interfaces add --uuid if-grenode1 --owner-datapath-uuid dp-0 --network-uuid nw-virtual --mac-address 7a:a7:15:32:ff:7a --ipv4-address 10.1.11.1 --port-name gre_node1 --mode vif
-vnctl interfaces add --uuid if-grenote2 --owner-datapath-uuid dp-1 --network-uuid nw-virtual --mac-address fe:0a:61:77:35:e6 --ipv4-address 10.1.11.2 --port-name gre_node2 --mode vif
+if [ -p /dev/stdin ]; then
+  input=$(cat -)
+  oldIFS=$IFS
+  IFS=$'\n'
+  lines=($input)
+
+  for infc in ${lines[@]}
+  do
+    if_dpuuid=$(echo ${infc} | awk '{print $1}')
+    if_name=$(echo ${infc} | awk '{print $2}')
+    if_addr=$(echo ${infc} | awk '{print $3}')
+    if_mac=$(echo ${infc} | awk '{print $4}')
+
+    vnctl interfaces add --uuid if-${if_name} \
+      --owner-datapath-uuid ${if_dpuuid} \
+      --network-uuid ${nw_virtual_uuid} \
+      --mac-address ${if_mac} \
+      --ipv4-address ${if_addr} \
+      --port-name ${if_name} \
+      --mode vif
+  done
+
+  IFS=$oldIFS
+fi
 
 # datapath networks
-vnctl datapaths network add dp-0 nw-public --broadcast-mac-address 02:01:00:01:00:01 --interface_uuid if-patch10
-vnctl datapaths network add dp-1 nw-public --broadcast-mac-address 02:01:00:01:00:02 --interface_uuid if-patch00
-vnctl datapaths network add dp-0 nw-virtual --broadcast-mac-address 02:01:00:02:00:01 --interface_uuid if-patch10
-vnctl datapaths network add dp-1 nw-virtual --broadcast-mac-address 02:01:00:02:00:02 --interface_uuid if-patch00
+vnctl datapaths network add ${dp0_name} ${nw_physical_uuid} \
+  --broadcast-mac-address 02:01:00:01:00:01 \
+  --interface_uuid  ${if_patch0_uuid}
 
-# translation
-#vnctl translations add --uuid tr-0 --interface-uuid if-edge0 --mode vnet_edge
-#vnctl translations add --uuid tr-1 --interface-uuid if-edge1 --mode vnet_edge
+vnctl datapaths network add ${dp1_name}${nw_physical_uuid} \
+  --broadcast-mac-address 02:01:00:01:00:02 \
+  --interface_uuid ${if_patch1_uuid}
 
-#vnctl vlan_translations add --uuid vt-0 --vlan-id 100 --network-id nw-virtual --translation-uuid tr-0
-#vnctl vlan_translations add --uuid vt-1 --vlan-id 101 --network-id nw-virtual --translation-uuid tr-1
+vnctl datapaths network add ${dp0_name} ${nw_virtual_uuid} \
+  --broadcast-mac-address 02:01:00:02:00:01 \
+  --interface_uuid  ${if_patch0_uuid}
 
-
-curl -s -X POST \
- --data-urlencode uuid=vt-0 \
- --data-urlencode vlan_id=100 \
- --data-urlencode network_uuid=nw-virtual \
- --data-urlencode translation_uuid=tr-0 \
-http://localhost:9090/api/vlan_translations
-
-curl -s -X POST \
- --data-urlencode uuid=vt-1 \
- --data-urlencode vlan_id=101 \
- --data-urlencode network_uuid=nw-virtual \
- --data-urlencode translation_uuid=tr-1 \
-http://localhost:9090/api/vlan_translations
-
+vnctl datapaths network add ${dp1_name} ${nw_virtual_uuid} \
+  --broadcast-mac-address 02:01:00:02:00:02 \
+  --interface_uuid ${if_patch1_uuid}
